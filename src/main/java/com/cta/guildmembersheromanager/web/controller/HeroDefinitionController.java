@@ -54,7 +54,7 @@ public class HeroDefinitionController {
     }
 
     @CrossOrigin
-    @PutMapping(value="/Configuration/Heros/")
+    @PutMapping(value="/Configuration/Heros")
     public void updateHeroDefinition(@RequestBody HeroDefinition updatedHeroDefinition) {
         heroDefinitionDAO.save(updatedHeroDefinition);
     }
