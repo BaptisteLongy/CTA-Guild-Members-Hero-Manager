@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.Valid;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -63,4 +64,17 @@ public class UserController {
         return userProfileList;
     }
 
+    @PostMapping("/users/{username}")
+    public UserProfile updateUserProfile(@PathVariable(value = "username") String username, @Valid @RequestBody UserProfile userProfile) {
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new ResourceNotFoundException("User", "username", username));
+
+        if (userProfile.getRoles() != null)  {
+            user.setRoles(userProfile.getRoles());
+        }
+
+        userRepository.save(user);
+
+        return new UserProfile(user.getId(), user.getUsername(), user.getName(), user.getRoles());
+    }
 }
