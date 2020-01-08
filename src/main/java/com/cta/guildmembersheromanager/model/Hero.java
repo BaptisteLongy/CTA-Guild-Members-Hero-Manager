@@ -16,7 +16,7 @@ public class Hero {
     private HeroDefinition definition;
 
     @OneToOne
-    private Member owner;
+    private User owner;
 
     private int Stars;
 
@@ -38,11 +38,11 @@ public class Hero {
         this.definition = definition;
     }
 
-    public Member getOwner() {
+    public User getOwner() {
         return owner;
     }
 
-    public void setOwner(Member owner) {
+    public void setOwner(User owner) {
         this.owner = owner;
     }
 

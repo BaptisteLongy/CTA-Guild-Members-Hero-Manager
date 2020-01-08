@@ -1,10 +1,12 @@
 package com.cta.guildmembersheromanager.web.controller;
 
 import com.cta.guildmembersheromanager.dao.HeroDAO;
-import com.cta.guildmembersheromanager.dao.MemberDAO;
+import com.cta.guildmembersheromanager.dao.UserDAO;
 import com.cta.guildmembersheromanager.model.Hero;
 import com.cta.guildmembersheromanager.model.Member;
+import com.cta.guildmembersheromanager.model.User;
 import com.cta.guildmembersheromanager.web.exceptions.MemberNotFoundException;
+import com.cta.guildmembersheromanager.web.exceptions.ResourceNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -12,6 +14,7 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.net.URI;
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 public class HeroController {
@@ -20,29 +23,27 @@ public class HeroController {
     private HeroDAO heroDAO;
 
     @Autowired
-    private MemberDAO memberDAO;
+    private UserDAO userDAO;
 
     @CrossOrigin
-    @GetMapping(value="/Members/{id}/Heros")
-    public List<Hero> getHerosListForMember(@PathVariable int id) {
-        Member member = memberDAO.findById(id);
+    @GetMapping(value="/Members/{username}/Heros")
+    public List<Hero> getHerosListForMember(@PathVariable(value = "username") String username) {
+        User user = userDAO.findByUsername(username)
+                .orElseThrow(() -> new ResourceNotFoundException("User", "username", username));
 
-        if(member==null) throw new MemberNotFoundException("Le membre avec l'id " + id + " n'existe pas.");
-
-        return heroDAO.findByowner(member);
+        return heroDAO.findByowner(user);
     }
 
     @CrossOrigin
-    @PostMapping(value="/Members/{id_member}/Heros")
-    public ResponseEntity<Void> addHero(@PathVariable int id_member, @RequestBody Hero newHero) {
-        Member member = memberDAO.findById(id_member);
-
-        if (member == null) throw new MemberNotFoundException("Le membre avec l'id " + id_member + " n'existe pas.");
+    @PostMapping(value="/Members/{username}/Heros")
+    public ResponseEntity<Void> addHero(@PathVariable(value = "username")String username, @RequestBody Hero newHero) {
+        User user = userDAO.findByUsername(username)
+                .orElseThrow(() -> new ResourceNotFoundException("User", "username", username));
 
         if (newHero == null) {
             return ResponseEntity.noContent().build();
         }
-        newHero.setOwner(member);
+        newHero.setOwner(user);
         heroDAO.save(newHero);
 
         URI location = ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}").buildAndExpand(newHero.getId()).toUri();
@@ -50,7 +51,7 @@ public class HeroController {
     }
 
     @CrossOrigin
-    @PutMapping(value="/Members/{id_member}/Heros")
+    @PutMapping(value="/Members/{username}/Heros")
     public void updateHero(@RequestBody Hero updatedHero) {
         heroDAO.save(updatedHero);
     }

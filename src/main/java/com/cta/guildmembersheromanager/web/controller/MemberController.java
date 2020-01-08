@@ -1,8 +1,11 @@
 package com.cta.guildmembersheromanager.web.controller;
 
 import com.cta.guildmembersheromanager.dao.MemberDAO;
+import com.cta.guildmembersheromanager.dao.UserDAO;
 import com.cta.guildmembersheromanager.model.Member;
+import com.cta.guildmembersheromanager.model.User;
 import com.cta.guildmembersheromanager.web.exceptions.MemberNotFoundException;
+import com.cta.guildmembersheromanager.web.exceptions.ResourceNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -16,47 +19,47 @@ public class MemberController {
 
 
     @Autowired
-    private MemberDAO memberDAO;
+    private UserDAO userDAO;
 
     @CrossOrigin
     @GetMapping(value="/Members")
-    public List<Member> listMembers() {
-        return memberDAO.findAll();
+    public List<User> listMembers() {
+        return userDAO.findAll();
     }
 
     @CrossOrigin
-    @GetMapping(value="/Members/{id}")
-    public Member getMember(@PathVariable int id) {
-        Member member = memberDAO.findById(id);
+    @GetMapping(value="/Members/{username}")
+    public User getMember(@PathVariable(value = "username") String username) {
+        User user = userDAO.findByUsername(username)
+                .orElseThrow(() -> new ResourceNotFoundException("User", "username", username));
 
-        if(member==null) throw new MemberNotFoundException("Le membre avec l'id " + id + " n'existe pas.");
-
-        return member;
+        return user;
     }
 
     @CrossOrigin
     @PostMapping(value="/Members")
-    public ResponseEntity<Void> addMember(@RequestBody Member newMember) {
-        Member memberAdded = memberDAO.save(newMember);
+    public ResponseEntity<Void> addMember(@RequestBody User newUser) {
+        User userAdded = userDAO.save(newUser);
 
-        if (newMember == null) {
+        if (newUser == null) {
             return ResponseEntity.noContent().build();
         }
 
-        URI location = ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}").buildAndExpand(memberAdded.getId()).toUri();
+        URI location = ServletUriComponentsBuilder.fromCurrentRequest().path("/{username}").buildAndExpand(userAdded.getUsername()).toUri();
         return ResponseEntity.created(location).build();
     }
 
     @CrossOrigin
-    @DeleteMapping(value="/Members/{id}")
-    public void deleteMember(@PathVariable int id) {
-        Member memberToDelete = memberDAO.findById(id);
-        memberDAO.delete(memberToDelete);
+    @DeleteMapping(value="/Members/{username}")
+    public void deleteMember(@PathVariable(value = "username") String username) {
+        User user = userDAO.findByUsername(username)
+                .orElseThrow(() -> new ResourceNotFoundException("User", "username", username));
+        userDAO.delete(user);
     }
 
     @CrossOrigin
     @PutMapping(value="/Members/")
-    public void updateMember(@RequestBody Member updatedMember) {
-        memberDAO.save(updatedMember);
+    public void updateMember(@RequestBody User updatedMember) {
+        userDAO.save(updatedMember);
     }
 }
