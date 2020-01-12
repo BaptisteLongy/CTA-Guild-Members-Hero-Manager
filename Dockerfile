@@ -18,4 +18,4 @@ EXPOSE 8080
 COPY --from=MAVEN_TOOL_CHAIN /tmp/target/guild-members-hero-manager-*SNAPSHOT.jar guild-members-hero-manager.jar
 
 # Run the jar file
-ENTRYPOINT ["java","-jar","/shopping-list.jar"]
+ENTRYPOINT ["java","-jar","/guild-members-hero-manager.jar"]
